@@ -43,7 +43,7 @@ class OpenAICompatProvider(ModelProvider):
         messages.append({"role": "user", "content": user_content})
 
         last_error: Exception | None = None
-        for attempt in range(3):
+        for _attempt in range(3):
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=messages,

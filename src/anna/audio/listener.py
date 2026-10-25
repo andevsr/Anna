@@ -5,7 +5,7 @@ import time
 
 import numpy as np
 
-from anna.audio.capture import Microphone, SAMPLE_RATE
+from anna.audio.capture import SAMPLE_RATE, Microphone
 from anna.audio.vad import VAD
 
 FRAME_MS = 30

@@ -57,7 +57,7 @@ class Microphone:
             except queue.Empty:
                 break
 
-    def __enter__(self) -> "Microphone":
+    def __enter__(self) -> Microphone:
         self.start()
         return self
 

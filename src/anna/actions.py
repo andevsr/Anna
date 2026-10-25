@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Annotated, Literal, Union
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field, TypeAdapter
 
@@ -72,19 +72,17 @@ class Done(BaseModel):
 
 
 Action = Annotated[
-    Union[
-        MouseMove,
-        Click,
-        Drag,
-        Type,
-        Key,
-        Scroll,
-        Wait,
-        OpenApp,
-        Shell,
-        AskUser,
-        Done,
-    ],
+    MouseMove
+    | Click
+    | Drag
+    | Type
+    | Key
+    | Scroll
+    | Wait
+    | OpenApp
+    | Shell
+    | AskUser
+    | Done,
     Field(discriminator="action"),
 ]
 

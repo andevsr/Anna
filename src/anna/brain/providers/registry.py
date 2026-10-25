@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable
 
 from anna.brain.providers.base import ModelProvider
 

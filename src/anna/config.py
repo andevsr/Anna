@@ -19,9 +19,11 @@ class Settings:
     stt_model: str = "mlx-community/whisper-base.en-mlx"
     wake_word: str = "hey anna"
     tts: bool = True
+    audit_enabled: bool = True
+    audit_log: str | None = None
 
     @classmethod
-    def from_env(cls) -> "Settings":
+    def from_env(cls) -> Settings:
         return cls(
             provider=os.getenv("ANNA_PROVIDER", "openai"),
             model=os.getenv("ANNA_MODEL") or None,
@@ -31,5 +33,9 @@ class Settings:
             stt_engine=os.getenv("ANNA_STT_ENGINE", "mlx"),
             stt_model=os.getenv("ANNA_STT_MODEL", "mlx-community/whisper-base.en-mlx"),
             wake_word=os.getenv("ANNA_WAKE_WORD", "hey anna"),
-            tts=os.getenv("ANNA_TTS", "1") not in ("0", "false", "False"),
+            tts=os.getenv("ANNA_TTS", "1").strip().lower()
+            not in ("0", "false", "no", "off"),
+            audit_enabled=os.getenv("ANNA_AUDIT", "1").strip().lower()
+            not in ("0", "false", "no", "off"),
+            audit_log=os.getenv("ANNA_AUDIT_LOG") or None,
         )

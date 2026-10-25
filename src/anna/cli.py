@@ -7,6 +7,8 @@ import sys
 from anna.brain.agent import Agent
 from anna.brain.providers import registry
 from anna.config import Settings
+from anna.interaction import TextInteraction
+from anna.safety.audit import AuditLog
 from anna.safety.policy import Policy
 
 
@@ -83,7 +85,14 @@ def main(argv: list[str] | None = None) -> None:
         settings.tts = False
 
     provider = build_provider(settings)
-    agent = Agent(provider, max_steps=settings.max_steps, policy=Policy())
+    audit = AuditLog(path=settings.audit_log, enabled=settings.audit_enabled)
+    agent = Agent(
+        provider,
+        max_steps=settings.max_steps,
+        policy=Policy(),
+        interaction=TextInteraction(),
+        audit=audit,
+    )
 
     if args.voice:
         from anna.audio.stt import Transcriber
@@ -102,7 +111,10 @@ def main(argv: list[str] | None = None) -> None:
         return
 
     if args.instruction:
-        print(agent.run(args.instruction))
+        try:
+            print(agent.run(args.instruction))
+        except Exception as exc:
+            print(f"[error] {exc}", file=sys.stderr)
         return
 
     print("anna (text mode). Type an instruction, or 'quit' to exit.")
@@ -116,7 +128,10 @@ def main(argv: list[str] | None = None) -> None:
             continue
         if goal.lower() in ("quit", "exit", "q"):
             return
-        print(agent.run(goal))
+        try:
+            print(agent.run(goal))
+        except Exception as exc:
+            print(f"[error] {exc}")
 
 
 if __name__ == "__main__":

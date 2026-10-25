@@ -41,6 +41,20 @@ uv run anna --voice --wake-word "hey jarvis" --no-tts
 
 Say "Hey Anna, open the calculator" and it will transcribe locally (mlx-whisper) and drive the agent. First voice run downloads the Whisper model (~145 MB).
 
+## Safety
+
+Every action is classified before it runs:
+
+- **Allow** — harmless reads (`pwd`, `ls`, `git status`, …), mouse moves, scrolls.
+- **Confirm** — mutating or unknown commands (`rm`, `git push`, `defaults write`, …),
+  dangerous shortcuts, and any typing/keys sent while a terminal is frontmost.
+- **Deny** — catastrophic commands (`sudo`, `rm -rf /`, `dd of=/dev/…`, piping a
+  download into a shell, shutdown/reboot, …). These cannot be approved.
+
+Confirmations are asked in the terminal in text mode and spoken/listened for in voice
+mode ("yes" / "go ahead" vs "no" / "cancel"). Every decision and result is appended to
+`~/.anna/audit.jsonl` (set `ANNA_AUDIT=0` to disable, `ANNA_AUDIT_LOG` to relocate).
+
 ## Architecture
 
 ```
@@ -56,7 +70,8 @@ CLI ─► Agent ─► provider.next_action(goal, history, screenshot) ─► A
 - `anna/audio/` — mic capture, VAD + utterance segmentation, wake-word matching, STT (mlx-whisper / OpenAI), TTS (`say`)
 - `anna/voice.py` — always-listening voice loop (wake word → command → agent)
 - `anna/actions.py` — pydantic action schema (`mouse_move`, `click`, `drag`, `type`, `key`, `scroll`, `wait`, `open_app`, `shell`, `ask_user`, `done`)
-- `anna/safety/policy.py` — risk confirmation hook (shell commands require approval)
+- `anna/safety/` — allow/confirm/deny policy, terminal-focus guard, and JSONL audit log
+- `anna/interaction.py` — approval/ask-user abstraction (text prompt or voice)
 
 ## Status
 
@@ -64,5 +79,5 @@ CLI ─► Agent ─► provider.next_action(goal, history, screenshot) ─► A
 - [x] Phase 1 — text-driven agent loop (OpenAI-compatible provider)
 - [x] Phase 2 — provider registry + Ollama local models
 - [x] Phase 3 — voice input (wake word "Hey Anna", VAD, mlx-whisper)
-- [ ] Phase 4 — safety policy + confirmation
+- [x] Phase 4 — safety policy + confirmation + audit log
 - [ ] Phase 5 — menubar overlay, TTS, `.app` bundling

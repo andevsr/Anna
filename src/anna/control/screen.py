@@ -4,8 +4,8 @@ import base64
 import io
 from dataclasses import dataclass
 
-import Quartz
 import mss
+import Quartz
 from PIL import Image
 
 

@@ -6,6 +6,7 @@ from anna.audio.stt import Transcriber
 from anna.audio.tts import speak
 from anna.audio.vad import VAD
 from anna.audio.wakeword import extract_command
+from anna.interaction import VoiceInteraction
 
 
 class VoiceLoop:
@@ -33,37 +34,46 @@ class VoiceLoop:
         print(f'Listening for wake word "{self.wake_word}"... (Ctrl+C to quit)')
         with Microphone() as mic:
             listener = SpeechListener(mic, VAD())
-            while True:
-                utt = listener.listen(timeout_s=None)
-                text = self.stt.transcribe(utt)
-                if not text:
-                    continue
-                print(f"[heard] {text}")
+            interaction = VoiceInteraction(listener, self.stt, tts=self.tts)
+            previous_interaction = self.agent.interaction
+            self.agent.interaction = interaction
+            try:
+                self._loop(mic, listener)
+            finally:
+                self.agent.interaction = previous_interaction
 
-                command = extract_command(text, self.wake_word)
-                if command is None:
-                    continue
+    def _loop(self, mic: Microphone, listener: SpeechListener) -> None:
+        while True:
+            utt = listener.listen(timeout_s=None)
+            text = self.stt.transcribe(utt)
+            if not text:
+                continue
+            print(f"[heard] {text}")
 
+            command = extract_command(text, self.wake_word)
+            if command is None:
+                continue
+
+            if not command:
+                if self.tts:
+                    speak("Yes?")
+                command = self._listen_command(listener)
                 if not command:
-                    if self.tts:
-                        speak("Yes?")
-                    command = self._listen_command(listener)
-                    if not command:
-                        print(f'Listening for wake word "{self.wake_word}"...')
-                        continue
+                    print(f'Listening for wake word "{self.wake_word}"...')
+                    continue
 
-                print(f"[command] {command}")
-                try:
-                    result = self.agent.run(command)
-                except Exception as e:
-                    print(f"[error] {e}")
-                    result = ""
-                if result:
-                    print(result)
-                    if self.tts:
-                        speak(result)
-                mic.drain()
-                print(f'Listening for wake word "{self.wake_word}"...')
+            print(f"[command] {command}")
+            try:
+                result = self.agent.run(command)
+            except Exception as e:
+                print(f"[error] {e}")
+                result = ""
+            if result:
+                print(result)
+                if self.tts:
+                    speak(result)
+            mic.drain()
+            print(f'Listening for wake word "{self.wake_word}"...')
 
     def _listen_command(self, listener: SpeechListener) -> str | None:
         utt = listener.listen(timeout_s=self.command_timeout_s)

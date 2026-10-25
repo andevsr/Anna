@@ -5,8 +5,6 @@ import time
 import Quartz
 from Quartz import (
     CGEventCreateMouseEvent,
-    CGEventPost,
-    kCGHIDEventTap,
     kCGEventLeftMouseDown,
     kCGEventLeftMouseDragged,
     kCGEventLeftMouseUp,
@@ -17,6 +15,7 @@ from Quartz import (
     kCGEventRightMouseDown,
     kCGEventRightMouseDragged,
     kCGEventRightMouseUp,
+    kCGHIDEventTap,
     kCGMouseButtonCenter,
     kCGMouseButtonLeft,
     kCGMouseButtonRight,
